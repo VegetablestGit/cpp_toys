@@ -1,0 +1,28 @@
+template<typename It, typename T, typename CMP = std::less<>>
+It my_lower_bound(It first, It last, const T& val, CMP cmp = std::less<>()) {
+	It it = first;
+	while (first != last) {
+		std::advance(it, std::distance(first, last)/2);
+		if (cmp(*it, val)) first = ++it;
+		else {
+			last = it;
+			it = first;
+		}
+	}
+	return first;
+}
+
+
+template<typename It, typename T, typename CMP = std::less<>>
+It my_upper_bound(It first, It last, const T& val, CMP cmp = std::less<>()) {
+	It it = first;
+	while(first != last){
+		std::advance(it, std::distance(first, last) / 2);
+		if (cmp(val, *it)) {
+			last = it;
+			it = first;
+		}
+		else first = ++it;
+	}
+	return first;
+}

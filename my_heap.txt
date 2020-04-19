@@ -1,0 +1,64 @@
+#include<xstddef>
+#include<utility>
+#include<vector>
+#include<algorithm>
+template<typename V, typename C = std::less<V> >
+class my_heap {
+	typedef int Key;
+	typedef pair<Key, V> node;
+	vector<node> heap;
+	int* poses;
+	C cmp;
+	void move(int from, int to) {
+		heap[to] = heap[from];
+		poses[heap[from].first] = to;
+	}
+	void update_down(int pos) {
+		node temp = heap[pos];
+		for (int i = pos * 2 + 1, end = heap.size(); i < end; pos = i, i = i * 2 + 1) {
+			if (i + 1 < end && cmp(heap[i].second, heap[i + 1].second))i++;
+			if (cmp(temp.second, heap[i].second)) move(i, pos);
+			else break;
+		}
+		poses[temp.first] = pos;
+		heap[pos] = temp;
+	}
+	void update_up(int pos) {
+		node temp = heap[pos];
+		for (int i = (pos + 1) / 2 - 1; i >= 0; pos = i, i = (i + 1) / 2 - 1) {
+			if (cmp(heap[i].second, temp.second)) move(i, pos);
+			else break;
+		}
+		poses[temp.first] = pos;
+		heap[pos] = temp;
+	}
+public:
+	my_heap(int key_cnt) {
+		poses = new int[key_cnt + 1];
+		for (int i = 0; i <= key_cnt; i++)
+			poses[i] = -1;
+	}
+	~my_heap() { delete[] poses; }
+	bool has(Key key) { return poses[key] != -1; }
+	void push(Key key, const V & val) {
+		heap.push_back(make_pair(key, val));
+		poses[key] = heap.size() - 1;
+		update_up(heap.size() - 1);
+	}
+	const node& top() { return heap[0]; }
+	bool empty() { return heap.empty(); }
+	void pop() {
+		int temp_key = heap[0].first;
+		move(heap.size() - 1, 0);
+		poses[temp_key] = -1;
+		heap.pop_back();
+		if (!empty()) update_down(0);
+	}
+	void update(Key key, const V & new_val) {
+		int pos = poses[key];
+		heap[pos].second = new_val;
+		update_up(pos);
+		update_down(pos);
+	}
+	const V& get_val(Key key) { return heap[poses[key]].second; }
+};
